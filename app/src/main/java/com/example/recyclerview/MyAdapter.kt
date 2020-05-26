@@ -1,18 +1,12 @@
 package com.example.recyclerview
 
 import android.app.AlertDialog
-import android.app.Dialog
-import android.app.LauncherActivity
 import android.content.DialogInterface
-import android.text.Layout
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.recyclerview.databinding.ListItemBinding
-import org.w3c.dom.Text
 
 class MyAdapter(private val viewModel : TodoViewModel):
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
@@ -31,10 +25,10 @@ class MyAdapter(private val viewModel : TodoViewModel):
 
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.todoText.text = viewModel.todos.value!![position].task
+        holder.todoText.text = viewModel.todos.value!![holder.adapterPosition].task
         //Menghapus Data
         holder.delBtn.setOnClickListener {
-            viewModel.todos.value!!.removeAt(position)
+            viewModel.removeTodo(holder.adapterPosition)
             notifyDataSetChanged()
             notifyItemRangeChanged(position,viewModel.todos.value!!.size)
         }
@@ -45,7 +39,7 @@ class MyAdapter(private val viewModel : TodoViewModel):
             val view = inflater.inflate(R.layout.edit_item,null)
 
             //Mengambil data sebelumnya
-            val prevText = viewModel.todos.value!![position].task
+            val prevText = viewModel.todos.value!![holder.adapterPosition].task
              val editText =view.findViewById<TextView>(R.id.editText)
             editText.text = prevText
 
@@ -56,7 +50,9 @@ class MyAdapter(private val viewModel : TodoViewModel):
                 .setPositiveButton("Update",DialogInterface.OnClickListener {
                         dialog, id ->
                     //edit
-                    viewModel.todos.value!![position].task = editText.text.toString()
+                    val editedText = editText.text.toString()
+                    viewModel.updateTodo(holder.adapterPosition,editedText)
+                    holder.todoText.text = editedText
                     notifyDataSetChanged()
                 })
                 .setNegativeButton("Cancel",DialogInterface.OnClickListener { dialog, id ->

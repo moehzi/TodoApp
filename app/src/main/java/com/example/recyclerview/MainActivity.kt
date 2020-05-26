@@ -3,11 +3,13 @@ package com.example.recyclerview
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.recyclerview.databinding.ActivityMainBinding
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -37,7 +39,9 @@ class MainActivity : AppCompatActivity() {
 
         //Add Data
         binding.btnNew.setOnClickListener {
-            viewModel.todos.value!!.add(Todo(1,binding.newText.text.toString()))
+            viewModel.addTodo(binding.newText.text.toString())
+            binding.newText.setText(null)
         }
+
     }
 }
