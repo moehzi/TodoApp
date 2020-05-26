@@ -1,28 +1,54 @@
 package com.example.recyclerview
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import org.w3c.dom.Text
-import java.text.FieldPosition
+import com.example.recyclerview.database.Todo
+import com.example.recyclerview.database.TodoDAO
+import com.example.recyclerview.database.TodoDatabase
+import com.example.recyclerview.database.TodoRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
-class TodoViewModel:ViewModel(){
-    private val _todos = MutableLiveData<ArrayList<Todo>>()
-    val todos : LiveData<ArrayList<Todo>>
+
+class TodoViewModel(application:Application):AndroidViewModel(application){
+    //add repository
+    private val repository: TodoRepository
+    private val todoDao:TodoDAO
+
+    private var _todos : LiveData<List<Todo>>
+    val todos : LiveData<List<Todo>>
     get() = _todos
 
+    private var vmJob = Job()
+    private val UIScope = CoroutineScope(Dispatchers.IO + vmJob)
+
     init {
-        _todos.value = arrayListOf(
-        )
+        todoDao = TodoDatabase.getInstance(application).todoDAO()
+        repository = TodoRepository(todoDao)
+        _todos = repository.allTodos
     }
     fun addTodo(text: String){
-        var newId = _todos.value!!.size+1
-        _todos.value!!.add(Todo(3,text))
+        UIScope.launch {
+        repository.insert(Todo(0,text))
+        }
     }
-    fun removeTodo(position:Int){
-        _todos.value!!.removeAt(position)
+    fun removeTodo(todo: Todo){
+        UIScope.launch {
+            repository.delete(todo)
+        }
+
     }
     fun updateTodo(pos:Int,text:String){
-        _todos.value!![pos].task = text
+        UIScope.launch {
+            repository.update(Todo(0,text))
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        vmJob.cancel()
     }
 }

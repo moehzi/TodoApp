@@ -5,13 +5,14 @@ import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.recyclerview.database.Todo
 import com.example.recyclerview.databinding.ListItemBinding
 
 class MyAdapter(private val viewModel : TodoViewModel):
-    RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-
-
+    ListAdapter<Todo, MyAdapter.MyViewHolder>(TodoDiffCallBack()) {
 
 
     override fun onCreateViewHolder(parent: ViewGroup,
@@ -25,12 +26,11 @@ class MyAdapter(private val viewModel : TodoViewModel):
 
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.todoText.text = viewModel.todos.value!![holder.adapterPosition].task
+        holder.todoText.text = getItem(holder.adapterPosition).task
         //Menghapus Data
         holder.delBtn.setOnClickListener {
-            viewModel.removeTodo(holder.adapterPosition)
-            notifyDataSetChanged()
-            notifyItemRangeChanged(position,viewModel.todos.value!!.size)
+            viewModel.removeTodo(getItem(holder.adapterPosition))
+
         }
         //Mengedit data
         holder.editBtn.setOnClickListener {
@@ -39,7 +39,7 @@ class MyAdapter(private val viewModel : TodoViewModel):
             val view = inflater.inflate(R.layout.edit_item,null)
 
             //Mengambil data sebelumnya
-            val prevText = viewModel.todos.value!![holder.adapterPosition].task
+            val prevText =getItem(holder.adapterPosition).task
              val editText =view.findViewById<TextView>(R.id.editText)
             editText.text = prevText
 
@@ -53,7 +53,7 @@ class MyAdapter(private val viewModel : TodoViewModel):
                     val editedText = editText.text.toString()
                     viewModel.updateTodo(holder.adapterPosition,editedText)
                     holder.todoText.text = editedText
-                    notifyDataSetChanged()
+
                 })
                 .setNegativeButton("Cancel",DialogInterface.OnClickListener { dialog, id ->
                 })
@@ -63,12 +63,20 @@ class MyAdapter(private val viewModel : TodoViewModel):
 
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
-    override fun getItemCount() = viewModel.todos.value!!.size
 
     class MyViewHolder(val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root){
         val todoText = binding.todoText
         val delBtn = binding.btnDelete
         val editBtn = binding.btnEdit
+    }
+    class TodoDiffCallBack:DiffUtil.ItemCallback<Todo>(){
+        override fun areItemsTheSame(oldItem: Todo, newItem: Todo): Boolean {
+            return oldItem.id == newItem.id
+
+        }
+
+        override fun areContentsTheSame(oldItem: Todo, newItem: Todo): Boolean {
+            return oldItem.equals(newItem)
+        }
     }
 }

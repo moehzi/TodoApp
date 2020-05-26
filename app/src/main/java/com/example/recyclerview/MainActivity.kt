@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
             viewModel.addTodo(binding.newText.text.toString())
             binding.newText.setText(null)
         }
-
+        viewModel.todos.observe(this, Observer { list->
+            viewAdapter.submitList(list.toMutableList())
+        })
     }
 }
