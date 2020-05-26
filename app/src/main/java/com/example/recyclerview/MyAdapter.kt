@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.recyclerview.databinding.ListItemBinding
 import org.w3c.dom.Text
 
-class MyAdapter(private val myDataset: MutableList<String>) :
+class MyAdapter(private val viewModel : TodoViewModel):
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
 
@@ -31,12 +31,12 @@ class MyAdapter(private val myDataset: MutableList<String>) :
 
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.todoText.text = myDataset[position]
+        holder.todoText.text = viewModel.todos.value!![position].task
         //Menghapus Data
         holder.delBtn.setOnClickListener {
-            myDataset.removeAt(position)
+            viewModel.todos.value!!.removeAt(position)
             notifyDataSetChanged()
-            notifyItemRangeChanged(position,myDataset.size)
+            notifyItemRangeChanged(position,viewModel.todos.value!!.size)
         }
         //Mengedit data
         holder.editBtn.setOnClickListener {
@@ -45,7 +45,7 @@ class MyAdapter(private val myDataset: MutableList<String>) :
             val view = inflater.inflate(R.layout.edit_item,null)
 
             //Mengambil data sebelumnya
-            val prevText = myDataset[position]
+            val prevText = viewModel.todos.value!![position].task
              val editText =view.findViewById<TextView>(R.id.editText)
             editText.text = prevText
 
@@ -56,7 +56,7 @@ class MyAdapter(private val myDataset: MutableList<String>) :
                 .setPositiveButton("Update",DialogInterface.OnClickListener {
                         dialog, id ->
                     //edit
-                    myDataset[position] = editText.text.toString()
+                    viewModel.todos.value!![position].task = editText.text.toString()
                     notifyDataSetChanged()
                 })
                 .setNegativeButton("Cancel",DialogInterface.OnClickListener { dialog, id ->
@@ -68,7 +68,7 @@ class MyAdapter(private val myDataset: MutableList<String>) :
     }
 
     // Return the size of your dataset (invoked by the layout manager)
-    override fun getItemCount() = myDataset.size
+    override fun getItemCount() = viewModel.todos.value!!.size
 
     class MyViewHolder(val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root){
         val todoText = binding.todoText
